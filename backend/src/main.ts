@@ -18,9 +18,18 @@ async function bootstrap() {
 
   // ✅ ALLOW ONLY VERCEL FRONTEND
   app.enableCors({
-    origin: 'https://vivah-matrimony.vercel.app',
+    origin: [
+      'https://vivah-matrimony.vercel.app',
+    ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+    ],
   });
+
 
   app.setGlobalPrefix('api/v1');
 
