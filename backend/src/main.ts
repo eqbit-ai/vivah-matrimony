@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import * as compression from 'compression';
@@ -10,24 +9,31 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
 
   app.use(helmet());
   app.use(compression());
   app.use(cookieParser());
 
   /**
-   * ✅ CORS CONFIG
-   * - Allows Vercel frontend
-   * - Allows localhost for dev
-   * - Supports cookies & auth headers
+   * ✅ PRODUCTION-SAFE CORS (Vercel + Railway)
+   * - Allows credentials (cookies)
+   * - Handles preflight correctly
+   * - Echoes allowed origins
    */
   app.enableCors({
-    origin: [
-      'https://vivah-matrimony.vercel.app',
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-    ],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'https://vivah-matrimony.vercel.app',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+      ];
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
@@ -35,6 +41,7 @@ async function bootstrap() {
       'Authorization',
       'X-Requested-With',
     ],
+    optionsSuccessStatus: 200,
   });
 
   app.setGlobalPrefix('api/v1');
@@ -55,10 +62,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  // ⚠️ Railway injects PORT — never hardcode
   const port = Number(process.env.PORT) || 4000;
-
-  // ✅ Required by Railway
   await app.listen(port, '0.0.0.0');
 
   logger.log(`🚀 Backend running on port ${port}`);
