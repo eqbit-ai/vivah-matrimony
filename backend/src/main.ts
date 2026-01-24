@@ -16,10 +16,17 @@ async function bootstrap() {
   app.use(compression());
   app.use(cookieParser());
 
-  // ✅ ALLOW ONLY VERCEL FRONTEND
+  /**
+   * ✅ CORS CONFIG
+   * - Allows Vercel frontend
+   * - Allows localhost for dev
+   * - Supports cookies & auth headers
+   */
   app.enableCors({
     origin: [
       'https://vivah-matrimony.vercel.app',
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -29,7 +36,6 @@ async function bootstrap() {
       'X-Requested-With',
     ],
   });
-
 
   app.setGlobalPrefix('api/v1');
 
@@ -49,9 +55,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
+  // ⚠️ Railway injects PORT — never hardcode
   const port = Number(process.env.PORT) || 4000;
 
-  // ✅ THIS IS THE MOST IMPORTANT LINE FOR RAILWAY
+  // ✅ Required by Railway
   await app.listen(port, '0.0.0.0');
 
   logger.log(`🚀 Backend running on port ${port}`);
