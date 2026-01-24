@@ -1,4 +1,8 @@
-import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosError,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import Cookies from 'js-cookie';
 import {
   AuthResponse,
@@ -6,35 +10,26 @@ import {
   SignUpData,
   Profile,
   User,
-  Subscription,
-  Interest,
-  Notification,
   PaginatedResponse,
   SearchFilters,
   ProfileFormData,
   PartnerPreference,
   DashboardMetrics,
   AdminSearchFilters,
-  ScheduleMeetingData,
 } from '@/types';
 
 /**
- * 🔒 PRODUCTION-ONLY API BASE
- * No localhost
- * No fallback
+ * 🚀 Production backend
  */
 const API_URL = 'https://vivah-backend-production.up.railway.app/api/v1';
 
-// Axios instance
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });
 
-/* ---------------- request interceptor ---------------- */
+/* ===================== INTERCEPTORS ===================== */
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -47,14 +42,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-/* ---------------- response interceptor ---------------- */
-
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       Cookies.remove('accessToken');
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+      if (
+        typeof window !== 'undefined' &&
+        !window.location.pathname.includes('/login')
+      ) {
         window.location.href = '/login';
       }
     }
@@ -65,139 +61,59 @@ api.interceptors.response.use(
 /* ===================== AUTH ===================== */
 
 export const authApi = {
-  signUp: async (data: SignUpData): Promise<AuthResponse> => {
-    const response = await api.post('/auth/signup', data);
-    return response.data;
-  },
+  signUp: async (data: SignUpData): Promise<AuthResponse> =>
+    (await api.post('/auth/signup', data)).data,
 
-  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login', credentials);
-    return response.data;
-  },
+  login: async (credentials: LoginCredentials): Promise<AuthResponse> =>
+    (await api.post('/auth/login', credentials)).data,
 
-  forgotPassword: async (email: string): Promise<{ message: string }> => {
-    const response = await api.post('/auth/forgot-password', { email });
-    return response.data;
-  },
-
-  resetPassword: async (token: string, password: string): Promise<{ message: string }> => {
-    const response = await api.post('/auth/reset-password', { token, password });
-    return response.data;
-  },
-
-  changePassword: async (currentPassword: string, newPassword: string): Promise<{ message: string }> => {
-    const response = await api.post('/auth/change-password', { currentPassword, newPassword });
-    return response.data;
-  },
-
-  verifyEmail: async (token: string): Promise<{ message: string }> => {
-    const response = await api.get(`/auth/verify-email?token=${token}`);
-    return response.data;
-  },
-
-  getCurrentUser: async (): Promise<User> => {
-    const response = await api.get('/auth/me');
-    return response.data;
-  },
+  getCurrentUser: async (): Promise<User> =>
+    (await api.get('/auth/me')).data,
 };
 
 /* ===================== PROFILES ===================== */
 
 export const profilesApi = {
-  getMyProfile: async (): Promise<Profile> => {
-    const response = await api.get('/profiles/me');
-    return response.data;
-  },
+  getMyProfile: async (): Promise<Profile> =>
+    (await api.get('/profiles/me')).data,
 
-  updateProfile: async (data: ProfileFormData): Promise<Profile> => {
-    const response = await api.put('/profiles/me', data);
-    return response.data;
-  },
+  updateProfile: async (data: ProfileFormData): Promise<Profile> =>
+    (await api.put('/profiles/me', data)).data,
 
-  updatePartnerPreferences: async (data: Partial<PartnerPreference>): Promise<PartnerPreference> => {
-    const response = await api.put('/profiles/me/preferences', data);
-    return response.data;
-  },
+  updatePartnerPreferences: async (
+    data: Partial<PartnerPreference>
+  ): Promise<PartnerPreference> =>
+    (await api.put('/profiles/me/preferences', data)).data,
 
-  searchProfiles: async (filters: SearchFilters): Promise<PaginatedResponse<Profile>> => {
-    const response = await api.get('/profiles/search', { params: filters });
-    return response.data;
-  },
-
-  getProfile: async (id: string): Promise<Profile> => {
-    const response = await api.get(`/profiles/${id}`);
-    return response.data;
-  },
-
-  getFullProfile: async (id: string): Promise<Profile> => {
-    const response = await api.get(`/profiles/${id}/full`);
-    return response.data;
-  },
-
-  addGalleryImage: async (imageUrl: string, caption?: string): Promise<any> => {
-    const response = await api.post('/profiles/me/gallery', { imageUrl, caption });
-    return response.data;
-  },
-
-  removeGalleryImage: async (imageId: string): Promise<{ message: string }> => {
-    const response = await api.delete(`/profiles/me/gallery/${imageId}`);
-    return response.data;
-  },
+  searchProfiles: async (
+    filters: SearchFilters
+  ): Promise<PaginatedResponse<Profile>> =>
+    (await api.get('/profiles/search', { params: filters })).data,
 };
 
-/* ===================== INTERESTS ===================== */
+/* ===================== ADMIN ===================== */
 
-export const interestsApi = {
-  sendInterest: async (receiverId: string, message?: string) => {
-    const response = await api.post('/interests', { receiverId, message });
-    return response.data;
-  },
+export const adminApi = {
+  getDashboardMetrics: async (): Promise<DashboardMetrics> =>
+    (await api.get('/admin/dashboard')).data,
 
-  respondToInterest: async (interestId: string, status: 'ACCEPTED' | 'REJECTED') => {
-    const response = await api.put(`/interests/${interestId}/respond`, { status });
-    return response.data;
-  },
+  getUsers: async (filters: AdminSearchFilters) =>
+    (await api.get('/admin/users', { params: filters })).data,
 
-  getSentInterests: async (page = 1, limit = 20) => {
-    const response = await api.get('/interests/sent', { params: { page, limit } });
-    return response.data;
-  },
+  getUserById: async (userId: string): Promise<User> =>
+    (await api.get(`/admin/users/${userId}`)).data,
 
-  getReceivedInterests: async (page = 1, limit = 20) => {
-    const response = await api.get('/interests/received', { params: { page, limit } });
-    return response.data;
-  },
+  updateUserStatus: async (
+    userId: string,
+    status: 'ACTIVE' | 'SUSPENDED'
+  ) =>
+    (await api.patch(`/admin/users/${userId}/status`, { status })).data,
 
-  getMutualMatches: async (page = 1, limit = 20) => {
-    const response = await api.get('/interests/matches', { params: { page, limit } });
-    return response.data;
-  },
-};
+  getSubscriptions: async () =>
+    (await api.get('/admin/subscriptions')).data,
 
-/* ===================== UPLOAD ===================== */
-
-export const uploadApi = {
-  uploadProfilePicture: async (file: File): Promise<{ imageUrl: string }> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await api.post('/upload/profile-picture', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-
-    return response.data;
-  },
-
-  uploadGalleryImage: async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await api.post('/upload/gallery', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-
-    return response.data;
-  },
+  getReports: async () =>
+    (await api.get('/admin/reports')).data,
 };
 
 /* ===================== EXPORT ===================== */

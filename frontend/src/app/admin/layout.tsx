@@ -5,8 +5,16 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Heart, Home, Users, Crown, Settings, LogOut, Shield,
-  ChevronDown, Menu, X, Bell, BarChart3,
+  Heart,
+  Home,
+  Users,
+  Crown,
+  Settings,
+  LogOut,
+  Shield,
+  Menu,
+  Bell,
+  BarChart3,
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
 import { cn, getInitials } from '@/lib/utils';
@@ -33,7 +41,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           await fetchUser();
         } catch {
           router.push('/login');
-          return;
         }
       }
     };
@@ -66,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile Overlay */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
@@ -80,25 +87,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </AnimatePresence>
 
       {/* Sidebar */}
-      <aside className={cn(
-        'fixed top-0 left-0 h-full w-72 bg-gray-800 shadow-xl z-50 transform transition-transform duration-300 lg:translate-x-0',
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      )}>
+      <aside
+        className={cn(
+          'fixed top-0 left-0 h-full w-72 bg-gray-800 shadow-xl z-50 transition-transform duration-300 lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
         <div className="flex flex-col h-full">
-          {/* Logo */}
           <div className="p-6 border-b border-gray-700">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <span className="font-display text-xl font-bold text-white">Vivah</span>
-                <span className="ml-2 px-2 py-0.5 bg-primary-600 text-white text-xs rounded-full">Admin</span>
+                <span className="text-xl font-bold text-white">Vivah</span>
+                <span className="ml-2 px-2 py-0.5 bg-primary-600 text-xs text-white rounded-full">
+                  Admin
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 p-4 overflow-y-auto">
             <ul className="space-y-2">
               {adminNavItems.map((item) => {
@@ -124,7 +133,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </ul>
           </nav>
 
-          {/* User Info */}
           <div className="p-4 border-t border-gray-700">
             <div className="flex items-center gap-3 p-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-secondary-400 flex items-center justify-center text-white font-bold">
@@ -137,7 +145,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 mt-2 text-red-400 hover:bg-red-900/30 rounded-xl transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 mt-2 text-red-400 hover:bg-red-900/30 rounded-xl"
             >
               <LogOut className="w-5 h-5" />
               Sign Out
@@ -146,10 +154,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="lg:ml-72">
-        {/* Top Header */}
-        <header className="sticky top-0 z-30 bg-gray-800/80 backdrop-blur-xl border-b border-gray-700">
+        <header className="sticky top-0 z-30 bg-gray-800/80 backdrop-blur border-b border-gray-700">
           <div className="flex items-center justify-between px-4 lg:px-8 h-16">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -158,19 +164,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Menu className="w-6 h-6" />
             </button>
 
-            <div className="flex items-center gap-4">
-              <button className="relative p-2 rounded-lg hover:bg-gray-700 text-gray-400">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-              </button>
-            </div>
+            <button className="relative p-2 rounded-lg hover:bg-gray-700 text-gray-400">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+            </button>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="p-4 lg:p-8 text-white">
-          {children}
-        </main>
+        <main className="p-4 lg:p-8 text-white">{children}</main>
       </div>
     </div>
   );
