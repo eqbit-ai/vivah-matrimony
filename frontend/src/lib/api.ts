@@ -153,7 +153,7 @@ export const subscriptionsApi = {
 };
 
 /* =====================================================
-   USERS (DASHBOARD SETTINGS)
+   USERS
 ===================================================== */
 
 export const usersApi = {
@@ -169,6 +169,7 @@ export const uploadApi = {
   uploadProfilePicture: async (file: File): Promise<{ imageUrl: string }> => {
     const formData = new FormData();
     formData.append('file', file);
+
     return (
       await api.post('/upload/profile-picture', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -181,8 +182,18 @@ export const uploadApi = {
    ADMIN
 ===================================================== */
 
+/**
+ * Full admin dashboard response
+ * (matches backend `/admin/dashboard`)
+ */
+export interface AdminDashboardResponse {
+  metrics: DashboardMetrics;
+  recentUsers: any[];
+  recentInterests: any[];
+}
+
 export const adminApi = {
-  getDashboardMetrics: async (): Promise<DashboardMetrics> =>
+  getDashboardMetrics: async (): Promise<AdminDashboardResponse> =>
     (await api.get('/admin/dashboard')).data,
 
   getUsers: async (filters: AdminSearchFilters) =>
