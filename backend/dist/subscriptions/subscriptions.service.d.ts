@@ -15,7 +15,32 @@ export declare class SubscriptionsService {
     private readonly logger;
     private razorpay;
     constructor(prisma: PrismaService, configService: ConfigService);
-    getSubscriptionStatus(userId: string): Promise<any>;
+    getSubscriptionStatus(userId: string): Promise<{
+        isExpired: boolean | null;
+        daysRemaining: number | null;
+        user: {
+            profile: {
+                firstName: string;
+                lastName: string;
+            } | null;
+            email: string;
+        };
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        status: import(".prisma/client").$Enums.SubscriptionStatus;
+        planName: string;
+        amount: number;
+        currency: string;
+        paymentId: string | null;
+        orderId: string | null;
+        paymentMethod: string | null;
+        startDate: Date | null;
+        endDate: Date | null;
+        interestsSent: number;
+        profilesViewed: number;
+    }>;
     getAvailablePlans(): {
         id: string;
         name: string;
@@ -33,22 +58,96 @@ export declare class SubscriptionsService {
         prefill: {
             name: string;
             email: string;
-            contact: any;
+            contact: string | undefined;
         };
     }>;
     verifyPayment(userId: string, dto: VerifyPaymentDto): Promise<{
         message: string;
-        subscription: any;
+        subscription: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            status: import(".prisma/client").$Enums.SubscriptionStatus;
+            planName: string;
+            amount: number;
+            currency: string;
+            paymentId: string | null;
+            orderId: string | null;
+            paymentMethod: string | null;
+            startDate: Date | null;
+            endDate: Date | null;
+            interestsSent: number;
+            profilesViewed: number;
+        };
     }>;
     getAllSubscriptions(page?: number, limit?: number, status?: SubscriptionStatus): Promise<{
-        data: any;
+        data: ({
+            user: {
+                profile: {
+                    firstName: string;
+                    lastName: string;
+                    phone: string;
+                } | null;
+                email: string;
+                id: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            status: import(".prisma/client").$Enums.SubscriptionStatus;
+            planName: string;
+            amount: number;
+            currency: string;
+            paymentId: string | null;
+            orderId: string | null;
+            paymentMethod: string | null;
+            startDate: Date | null;
+            endDate: Date | null;
+            interestsSent: number;
+            profilesViewed: number;
+        })[];
         meta: {
-            total: any;
+            total: number;
             page: number;
             limit: number;
             totalPages: number;
         };
     }>;
-    activateSubscription(userId: string, days: number): Promise<any>;
-    deactivateSubscription(userId: string): Promise<any>;
+    activateSubscription(userId: string, days: number): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        status: import(".prisma/client").$Enums.SubscriptionStatus;
+        planName: string;
+        amount: number;
+        currency: string;
+        paymentId: string | null;
+        orderId: string | null;
+        paymentMethod: string | null;
+        startDate: Date | null;
+        endDate: Date | null;
+        interestsSent: number;
+        profilesViewed: number;
+    }>;
+    deactivateSubscription(userId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        status: import(".prisma/client").$Enums.SubscriptionStatus;
+        planName: string;
+        amount: number;
+        currency: string;
+        paymentId: string | null;
+        orderId: string | null;
+        paymentMethod: string | null;
+        startDate: Date | null;
+        endDate: Date | null;
+        interestsSent: number;
+        profilesViewed: number;
+    }>;
 }
