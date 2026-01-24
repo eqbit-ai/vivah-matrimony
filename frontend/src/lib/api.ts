@@ -1,9 +1,7 @@
 import axios, {
   AxiosInstance,
   AxiosError,
-  InternalAxiosRequestConfig,
 } from 'axios';
-import Cookies from 'js-cookie';
 import {
   AuthResponse,
   LoginCredentials,
@@ -27,6 +25,11 @@ import {
 
 const API_URL = 'https://vivah-backend-production.up.railway.app/api/v1';
 
+/**
+ * ✅ Axios instance
+ * - withCredentials REQUIRED for cookies
+ * - DO NOT manually attach Authorization header
+ */
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
@@ -34,25 +37,13 @@ const api: AxiosInstance = axios.create({
 });
 
 /* =====================================================
-   INTERCEPTORS
+   RESPONSE INTERCEPTOR
 ===================================================== */
-
-api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = Cookies.get('accessToken');
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      Cookies.remove('accessToken');
       if (
         typeof window !== 'undefined' &&
         !window.location.pathname.includes('/login')
@@ -109,7 +100,10 @@ export const profilesApi = {
 ===================================================== */
 
 export const interestsApi = {
-  sendInterest: async (receiverId: string, message?: string): Promise<Interest> =>
+  sendInterest: async (
+    receiverId: string,
+    message?: string
+  ): Promise<Interest> =>
     (await api.post('/interests', { receiverId, message })).data,
 
   respondToInterest: async (
@@ -182,10 +176,6 @@ export const uploadApi = {
    ADMIN
 ===================================================== */
 
-/**
- * Full admin dashboard response
- * (matches backend `/admin/dashboard`)
- */
 export interface AdminDashboardResponse {
   metrics: DashboardMetrics;
   recentUsers: any[];
