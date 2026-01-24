@@ -1,13 +1,17 @@
 {
+  "/_not-found": "app/_not-found.js",
   "/page": "app/page.js",
+  "/signup/page": "app/signup/page.js",
   "/login/page": "app/login/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/search/page": "app/dashboard/search/page.js",
-  "/dashboard/profile/page": "app/dashboard/profile/page.js",
-  "/dashboard/profile/[id]/page": "app/dashboard/profile/[id]/page.js",
-  "/dashboard/interests/page": "app/dashboard/interests/page.js",
-  "/dashboard/matches/page": "app/dashboard/matches/page.js",
+  "/admin/users/page": "app/admin/users/page.js",
+  "/admin/page": "app/admin/page.js",
   "/dashboard/notifications/page": "app/dashboard/notifications/page.js",
+  "/dashboard/profile/[id]/page": "app/dashboard/profile/[id]/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/profile/page": "app/dashboard/profile/page.js",
+  "/dashboard/settings/page": "app/dashboard/settings/page.js",
+  "/dashboard/search/page": "app/dashboard/search/page.js",
   "/dashboard/subscription/page": "app/dashboard/subscription/page.js",
-  "/dashboard/settings/page": "app/dashboard/settings/page.js"
+  "/dashboard/matches/page": "app/dashboard/matches/page.js",
+  "/dashboard/interests/page": "app/dashboard/interests/page.js"
 }

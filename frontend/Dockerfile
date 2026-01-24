@@ -1,46 +1,31 @@
-# Build stage
-FROM node:20-alpine AS builder
+# ---------- Builder ----------
+FROM node:20-bookworm AS builder
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Copy source code
-COPY . .
+COPY prisma ./prisma/
+RUN npx prisma generate
 
-# Build application
-ENV NEXT_TELEMETRY_DISABLED=1
+COPY . .
 RUN npm run build
 
-# Production stage
-FROM node:20-alpine AS runner
+# ---------- Production ----------
+FROM node:20-bookworm AS production
 
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+COPY package*.json ./
+RUN npm ci --only=production
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+COPY prisma ./prisma/
+RUN npx prisma generate
 
-# Copy built files
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/dist ./dist
+RUN mkdir -p /app/uploads/profiles
 
-# Set ownership
-RUN chown -R nextjs:nodejs /app
+EXPOSE 4000
 
-USER nextjs
-
-EXPOSE 3000
-
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-CMD ["node", "server.js"]
+CMD ["node", "dist/main"]

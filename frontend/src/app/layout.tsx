@@ -14,15 +14,41 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || 'https://vivah-matrimony.vercel.app'
+  ),
+
   title: 'Vivah Matrimony - Find Your Perfect Life Partner',
-  description: 'Premium Indian matrimonial platform to find your soulmate. Trusted by thousands of families for arranging perfect matches.',
-  keywords: 'matrimony, indian matrimony, marriage, wedding, bride, groom, matchmaking, vivah',
+  description:
+    'Premium Indian matrimonial platform to find your soulmate. Trusted by thousands of families for arranging perfect matches.',
+
+  keywords: [
+    'matrimony',
+    'indian matrimony',
+    'marriage',
+    'wedding',
+    'bride',
+    'groom',
+    'matchmaking',
+    'vivah',
+  ],
+
   authors: [{ name: 'Vivah Matrimony' }],
+
   openGraph: {
     title: 'Vivah Matrimony - Find Your Perfect Life Partner',
-    description: 'Premium Indian matrimonial platform to find your soulmate.',
+    description:
+      'Premium Indian matrimonial platform to find your soulmate.',
     type: 'website',
     locale: 'en_IN',
+    siteName: 'Vivah Matrimony',
+  },
+
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Vivah Matrimony - Find Your Perfect Life Partner',
+    description:
+      'Premium Indian matrimonial platform to find your soulmate.',
   },
 };
 
@@ -35,6 +61,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="min-h-screen bg-gradient-to-br from-ivory-light via-white to-accent-200 antialiased">
         {children}
+
         <Toaster
           position="top-right"
           toastOptions={{
