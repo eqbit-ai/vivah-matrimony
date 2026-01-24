@@ -10,6 +10,9 @@ import {
   SignUpData,
   Profile,
   User,
+  Subscription,
+  Interest,
+  Notification,
   PaginatedResponse,
   SearchFilters,
   ProfileFormData,
@@ -18,9 +21,10 @@ import {
   AdminSearchFilters,
 } from '@/types';
 
-/**
- * 🚀 Production backend
- */
+/* =====================================================
+   CONFIG
+===================================================== */
+
 const API_URL = 'https://vivah-backend-production.up.railway.app/api/v1';
 
 const api: AxiosInstance = axios.create({
@@ -29,7 +33,9 @@ const api: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
-/* ===================== INTERCEPTORS ===================== */
+/* =====================================================
+   INTERCEPTORS
+===================================================== */
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -58,7 +64,9 @@ api.interceptors.response.use(
   }
 );
 
-/* ===================== AUTH ===================== */
+/* =====================================================
+   AUTH
+===================================================== */
 
 export const authApi = {
   signUp: async (data: SignUpData): Promise<AuthResponse> =>
@@ -71,7 +79,9 @@ export const authApi = {
     (await api.get('/auth/me')).data,
 };
 
-/* ===================== PROFILES ===================== */
+/* =====================================================
+   PROFILES
+===================================================== */
 
 export const profilesApi = {
   getMyProfile: async (): Promise<Profile> =>
@@ -89,9 +99,87 @@ export const profilesApi = {
     filters: SearchFilters
   ): Promise<PaginatedResponse<Profile>> =>
     (await api.get('/profiles/search', { params: filters })).data,
+
+  getProfile: async (id: string): Promise<Profile> =>
+    (await api.get(`/profiles/${id}`)).data,
 };
 
-/* ===================== ADMIN ===================== */
+/* =====================================================
+   INTERESTS
+===================================================== */
+
+export const interestsApi = {
+  sendInterest: async (receiverId: string, message?: string): Promise<Interest> =>
+    (await api.post('/interests', { receiverId, message })).data,
+
+  respondToInterest: async (
+    interestId: string,
+    status: 'ACCEPTED' | 'REJECTED'
+  ): Promise<Interest> =>
+    (await api.put(`/interests/${interestId}/respond`, { status })).data,
+
+  getSent: async (page = 1, limit = 20) =>
+    (await api.get('/interests/sent', { params: { page, limit } })).data,
+
+  getReceived: async (page = 1, limit = 20) =>
+    (await api.get('/interests/received', { params: { page, limit } })).data,
+
+  getMatches: async (page = 1, limit = 20) =>
+    (await api.get('/interests/matches', { params: { page, limit } })).data,
+};
+
+/* =====================================================
+   NOTIFICATIONS
+===================================================== */
+
+export const notificationsApi = {
+  getAll: async (): Promise<Notification[]> =>
+    (await api.get('/notifications')).data,
+
+  markAsRead: async (id: string) =>
+    (await api.patch(`/notifications/${id}/read`)).data,
+};
+
+/* =====================================================
+   SUBSCRIPTIONS
+===================================================== */
+
+export const subscriptionsApi = {
+  getMySubscription: async (): Promise<Subscription> =>
+    (await api.get('/subscriptions/me')).data,
+
+  getPlans: async (): Promise<Subscription[]> =>
+    (await api.get('/subscriptions/plans')).data,
+};
+
+/* =====================================================
+   USERS (DASHBOARD SETTINGS)
+===================================================== */
+
+export const usersApi = {
+  updateSettings: async (data: Partial<User>): Promise<User> =>
+    (await api.put('/users/me', data)).data,
+};
+
+/* =====================================================
+   UPLOAD
+===================================================== */
+
+export const uploadApi = {
+  uploadProfilePicture: async (file: File): Promise<{ imageUrl: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return (
+      await api.post('/upload/profile-picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+    ).data;
+  },
+};
+
+/* =====================================================
+   ADMIN
+===================================================== */
 
 export const adminApi = {
   getDashboardMetrics: async (): Promise<DashboardMetrics> =>
@@ -100,22 +188,15 @@ export const adminApi = {
   getUsers: async (filters: AdminSearchFilters) =>
     (await api.get('/admin/users', { params: filters })).data,
 
-  getUserById: async (userId: string): Promise<User> =>
-    (await api.get(`/admin/users/${userId}`)).data,
-
   updateUserStatus: async (
     userId: string,
     status: 'ACTIVE' | 'SUSPENDED'
   ) =>
     (await api.patch(`/admin/users/${userId}/status`, { status })).data,
-
-  getSubscriptions: async () =>
-    (await api.get('/admin/subscriptions')).data,
-
-  getReports: async () =>
-    (await api.get('/admin/reports')).data,
 };
 
-/* ===================== EXPORT ===================== */
+/* =====================================================
+   DEFAULT EXPORT
+===================================================== */
 
 export default api;
