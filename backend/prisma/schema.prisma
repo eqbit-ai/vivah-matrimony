@@ -1,0 +1,385 @@
+// Prisma Schema for Vivah Matrimony Platform
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Religion {
+  HINDU
+  MUSLIM
+  CHRISTIAN
+  SIKH
+  BUDDHIST
+  JAIN
+  PARSI
+  JEWISH
+  OTHER
+}
+
+enum MaritalStatus {
+  NEVER_MARRIED
+  DIVORCED
+  WIDOWED
+  AWAITING_DIVORCE
+}
+
+enum SubscriptionStatus {
+  FREE
+  PAID
+  EXPIRED
+}
+
+enum InterestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum NotificationType {
+  INTEREST_RECEIVED
+  INTEREST_ACCEPTED
+  INTEREST_REJECTED
+  PROFILE_VIEW
+  ADMIN_MESSAGE
+  MEETING_SCHEDULED
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  passwordHash      String
+  role              Role               @default(USER)
+  isEmailVerified   Boolean            @default(false)
+  emailVerifyToken  String?
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  lastLoginAt       DateTime?
+  isActive          Boolean            @default(true)
+  
+  // Relations
+  profile           Profile?
+  subscription      Subscription?
+  sentInterests     Interest[]         @relation("SentInterests")
+  receivedInterests Interest[]         @relation("ReceivedInterests")
+  notifications     Notification[]
+  profileViews      ProfileView[]      @relation("Viewer")
+  viewedBy          ProfileView[]      @relation("Viewed")
+
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
+}
+
+// ============================================
+// PROFILE
+// ============================================
+
+model Profile {
+  id              String        @id @default(cuid())
+  userId          String        @unique
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Basic Information
+  firstName       String
+  lastName        String
+  gender          Gender
+  dateOfBirth     DateTime
+  
+  // Physical Attributes
+  height          Int?          // in cm
+  weight          Int?          // in kg
+  complexion      String?
+  bodyType        String?
+  
+  // Religious & Cultural
+  religion        Religion
+  caste           String?
+  subCaste        String?
+  motherTongue    String?
+  gothra          String?
+  
+  // Location
+  country         String        @default("India")
+  state           String
+  city            String
+  pincode         String?
+  
+  // Education & Profession
+  education       String
+  educationDetail String?
+  profession      String
+  employer        String?
+  annualIncome    String?
+  workingCity     String?
+  
+  // Family Details
+  fatherName      String?
+  fatherOccupation String?
+  motherName      String?
+  motherOccupation String?
+  siblings        Int?          @default(0)
+  familyType      String?       // Joint/Nuclear
+  familyStatus    String?       // Middle Class/Upper Middle Class/Rich
+  familyValues    String?       // Traditional/Moderate/Liberal
+  
+  // Personal Details
+  maritalStatus   MaritalStatus @default(NEVER_MARRIED)
+  diet            String?       // Vegetarian/Non-Vegetarian/Eggetarian
+  smoking         String?       // Never/Occasionally/Regular
+  drinking        String?       // Never/Occasionally/Regular
+  
+  // About
+  bio             String?       @db.Text
+  hobbies         String[]
+  
+  // Contact (visible only to admin and matched users with subscription)
+  phone           String
+  alternatePhone  String?
+  
+  // Profile Media
+  profilePicture  String?
+  gallery         ProfileImage[]
+  
+  // Partner Preferences
+  partnerPreferences PartnerPreference?
+  
+  // Profile Status
+  isComplete      Boolean       @default(false)
+  isVerified      Boolean       @default(false)
+  verifiedAt      DateTime?
+  verifiedBy      String?       // Admin ID who verified
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([gender])
+  @@index([religion])
+  @@index([caste])
+  @@index([state])
+  @@index([city])
+  @@index([createdAt])
+}
+
+model ProfileImage {
+  id          String   @id @default(cuid())
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  imageUrl    String
+  isPrimary   Boolean  @default(false)
+  caption     String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([profileId])
+}
+
+// ============================================
+// PARTNER PREFERENCES
+// ============================================
+
+model PartnerPreference {
+  id              String    @id @default(cuid())
+  profileId       String    @unique
+  profile         Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  // Age Range
+  minAge          Int       @default(18)
+  maxAge          Int       @default(60)
+  
+  // Height Range (in cm)
+  minHeight       Int?
+  maxHeight       Int?
+  
+  // Religious Preferences
+  religions       Religion[]
+  castes          String[]
+  
+  // Location
+  countries       String[]
+  states          String[]
+  cities          String[]
+  
+  // Education & Profession
+  minEducation    String?
+  professions     String[]
+  
+  // Lifestyle
+  maritalStatuses MaritalStatus[]
+  diets           String[]
+  
+  // Other
+  aboutPartner    String?   @db.Text
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ============================================
+// SUBSCRIPTION
+// ============================================
+
+model Subscription {
+  id              String             @id @default(cuid())
+  userId          String             @unique
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  status          SubscriptionStatus @default(FREE)
+  planName        String             @default("Free")
+  amount          Int                @default(0)     // in paise (₹1499 = 149900)
+  currency        String             @default("INR")
+  
+  // Payment Details
+  paymentId       String?            // Razorpay payment ID
+  orderId         String?            // Razorpay order ID
+  paymentMethod   String?
+  
+  // Validity
+  startDate       DateTime?
+  endDate         DateTime?
+  
+  // Usage Limits
+  interestsSent   Int                @default(0)
+  profilesViewed  Int                @default(0)
+  
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([status])
+  @@index([endDate])
+}
+
+// ============================================
+// INTEREST SYSTEM
+// ============================================
+
+model Interest {
+  id              String          @id @default(cuid())
+  
+  senderId        String
+  sender          User            @relation("SentInterests", fields: [senderId], references: [id], onDelete: Cascade)
+  
+  receiverId      String
+  receiver        User            @relation("ReceivedInterests", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  status          InterestStatus  @default(PENDING)
+  message         String?         @db.Text
+  
+  // Admin tracking
+  viewedByAdmin   Boolean         @default(false)
+  adminNotes      String?         @db.Text
+  
+  // Meeting scheduling (by admin)
+  meetingScheduled Boolean        @default(false)
+  meetingDate     DateTime?
+  meetingVenue    String?
+  meetingNotes    String?         @db.Text
+  
+  respondedAt     DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type        NotificationType
+  title       String
+  message     String           @db.Text
+  data        Json?            // Additional data like interest ID, profile ID, etc.
+  
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+  
+  createdAt   DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ============================================
+// PROFILE VIEWS
+// ============================================
+
+model ProfileView {
+  id          String   @id @default(cuid())
+  viewerId    String
+  viewer      User     @relation("Viewer", fields: [viewerId], references: [id], onDelete: Cascade)
+  
+  viewedId    String
+  viewed      User     @relation("Viewed", fields: [viewedId], references: [id], onDelete: Cascade)
+  
+  viewedAt    DateTime @default(now())
+
+  @@unique([viewerId, viewedId, viewedAt])
+  @@index([viewerId])
+  @@index([viewedId])
+}
+
+// ============================================
+// ADMIN SPECIFIC
+// ============================================
+
+model AdminLog {
+  id          String   @id @default(cuid())
+  adminId     String
+  action      String
+  entity      String   // User, Profile, Interest, etc.
+  entityId    String?
+  details     Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+}
