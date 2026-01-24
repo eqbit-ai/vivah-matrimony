@@ -11,32 +11,7 @@ export declare class SubscriptionsController {
         durationDisplay: string;
         features: string[];
     }[];
-    getStatus(userId: string): Promise<{
-        isExpired: boolean | null;
-        daysRemaining: number | null;
-        user: {
-            email: string;
-            profile: {
-                firstName: string;
-                lastName: string;
-            } | null;
-        };
-        id: string;
-        userId: string;
-        status: import(".prisma/client").$Enums.SubscriptionStatus;
-        planName: string;
-        amount: number;
-        currency: string;
-        paymentId: string | null;
-        orderId: string | null;
-        paymentMethod: string | null;
-        startDate: Date | null;
-        endDate: Date | null;
-        interestsSent: number;
-        profilesViewed: number;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
+    getStatus(userId: string): Promise<any>;
     createOrder(userId: string, dto: CreateOrderDto): Promise<{
         orderId: any;
         amount: any;
@@ -45,27 +20,11 @@ export declare class SubscriptionsController {
         prefill: {
             name: string;
             email: string;
-            contact: string | undefined;
+            contact: any;
         };
     }>;
     verifyPayment(userId: string, dto: VerifyPaymentDto): Promise<{
         message: string;
-        subscription: {
-            id: string;
-            userId: string;
-            status: import(".prisma/client").$Enums.SubscriptionStatus;
-            planName: string;
-            amount: number;
-            currency: string;
-            paymentId: string | null;
-            orderId: string | null;
-            paymentMethod: string | null;
-            startDate: Date | null;
-            endDate: Date | null;
-            interestsSent: number;
-            profilesViewed: number;
-            createdAt: Date;
-            updatedAt: Date;
-        };
+        subscription: any;
     }>;
 }

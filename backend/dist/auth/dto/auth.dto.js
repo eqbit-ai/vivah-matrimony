@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RefreshTokenDto = exports.AuthResponseDto = exports.VerifyEmailDto = exports.ChangePasswordDto = exports.ResetPasswordDto = exports.ForgotPasswordDto = exports.LoginDto = exports.SignUpDto = void 0;
 const class_validator_1 = require("class-validator");
@@ -50,7 +51,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: client_1.Gender, example: 'MALE' }),
     (0, class_validator_1.IsEnum)(client_1.Gender),
-    __metadata("design:type", String)
+    __metadata("design:type", typeof (_a = typeof client_1.Gender !== "undefined" && client_1.Gender) === "function" ? _a : Object)
 ], SignUpDto.prototype, "gender", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: '1995-06-15' }),
@@ -61,7 +62,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({ enum: client_1.Religion, example: 'HINDU' }),
     (0, class_validator_1.IsEnum)(client_1.Religion),
-    __metadata("design:type", String)
+    __metadata("design:type", typeof (_b = typeof client_1.Religion !== "undefined" && client_1.Religion) === "function" ? _b : Object)
 ], SignUpDto.prototype, "religion", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: '9876543210' }),

@@ -9,7 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionStatus } from '@prisma/client';
 import * as crypto from 'crypto';
 
-// ✅ Razorpay is CommonJS – MUST be required
+// Razorpay is CommonJS
 const Razorpay = require('razorpay');
 
 export interface CreateOrderDto {
@@ -25,12 +25,12 @@ export interface VerifyPaymentDto {
 const PLANS = {
   BASIC: {
     name: 'Basic Plan',
-    amount: 149900, // ₹1499 in paise
+    amount: 149900, // ₹1499
     duration: 90,
   },
   PREMIUM: {
     name: 'Premium Plan',
-    amount: 299900, // ₹2999 in paise
+    amount: 299900, // ₹2999
     duration: 180,
   },
 };
@@ -38,19 +38,32 @@ const PLANS = {
 @Injectable()
 export class SubscriptionsService {
   private readonly logger = new Logger(SubscriptionsService.name);
-  private razorpay: any;
+  private razorpay: any | null = null;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
   ) {
-    this.razorpay = new Razorpay({
-      key_id: this.configService.get<string>('RAZORPAY_KEY_ID') || '',
-      key_secret: this.configService.get<string>('RAZORPAY_KEY_SECRET') || '',
-    });
+    const keyId = this.configService.get<string>('RAZORPAY_KEY_ID');
+    const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
+
+    // ✅ SAFE lazy init (Railway WILL NOT crash)
+    if (keyId && keySecret) {
+      this.razorpay = new Razorpay({
+        key_id: keyId,
+        key_secret: keySecret,
+      });
+      this.logger.log('Razorpay initialized');
+    } else {
+      this.logger.warn(
+        'Razorpay keys not found. Payments are disabled.',
+      );
+    }
   }
 
-  // Get current subscription status
+  // -------------------------
+  // Subscription Status
+  // -------------------------
   async getSubscriptionStatus(userId: string) {
     const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
@@ -88,7 +101,9 @@ export class SubscriptionsService {
     };
   }
 
-  // Get available plans
+  // -------------------------
+  // Plans
+  // -------------------------
   getAvailablePlans() {
     return Object.entries(PLANS).map(([key, plan]) => ({
       id: key,
@@ -114,8 +129,16 @@ export class SubscriptionsService {
     }));
   }
 
-  // Create Razorpay order
+  // -------------------------
+  // Create Order
+  // -------------------------
   async createOrder(userId: string, dto: CreateOrderDto) {
+    if (!this.razorpay) {
+      throw new BadRequestException(
+        'Payment service not configured',
+      );
+    }
+
     const plan = PLANS[dto.planType];
     if (!plan) {
       throw new BadRequestException('Invalid plan type');
@@ -162,15 +185,15 @@ export class SubscriptionsService {
         },
       };
     } catch (error) {
-      this.logger.error('Failed to create Razorpay order', error);
+      this.logger.error('Failed to create order', error);
       throw new BadRequestException('Failed to create order');
     }
   }
 
-  // Verify payment
+  // -------------------------
+  // Verify Payment
+  // -------------------------
   async verifyPayment(userId: string, dto: VerifyPaymentDto) {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = dto;
-
     const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
     if (!keySecret) {
       throw new BadRequestException('Payment secret not configured');
@@ -178,10 +201,10 @@ export class SubscriptionsService {
 
     const expectedSignature = crypto
       .createHmac('sha256', keySecret)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .update(`${dto.razorpay_order_id}|${dto.razorpay_payment_id}`)
       .digest('hex');
 
-    if (expectedSignature !== razorpay_signature) {
+    if (expectedSignature !== dto.razorpay_signature) {
       throw new BadRequestException('Invalid payment signature');
     }
 
@@ -189,7 +212,7 @@ export class SubscriptionsService {
       where: { userId },
     });
 
-    if (!subscription || subscription.orderId !== razorpay_order_id) {
+    if (!subscription || subscription.orderId !== dto.razorpay_order_id) {
       throw new BadRequestException('Order not found');
     }
 
@@ -202,18 +225,17 @@ export class SubscriptionsService {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + duration);
 
-    const updatedSubscription = await this.prisma.subscription.update({
-      where: { userId },
-      data: {
-        status: SubscriptionStatus.PAID,
-        paymentId: razorpay_payment_id,
-        startDate,
-        endDate,
-        paymentMethod: 'razorpay',
-      },
-    });
-
-    this.logger.log(`Payment verified for user ${userId}`);
+    const updatedSubscription =
+      await this.prisma.subscription.update({
+        where: { userId },
+        data: {
+          status: SubscriptionStatus.PAID,
+          paymentId: dto.razorpay_payment_id,
+          startDate,
+          endDate,
+          paymentMethod: 'razorpay',
+        },
+      });
 
     return {
       message: 'Payment verified successfully',
@@ -221,8 +243,14 @@ export class SubscriptionsService {
     };
   }
 
-  // Admin: Get all subscriptions
-  async getAllSubscriptions(page = 1, limit = 20, status?: SubscriptionStatus) {
+  // -------------------------
+  // Admin APIs
+  // -------------------------
+  async getAllSubscriptions(
+    page = 1,
+    limit = 20,
+    status?: SubscriptionStatus,
+  ) {
     const skip = (page - 1) * limit;
     const where = status ? { status } : {};
 
@@ -238,7 +266,11 @@ export class SubscriptionsService {
               id: true,
               email: true,
               profile: {
-                select: { firstName: true, lastName: true, phone: true },
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  phone: true,
+                },
               },
             },
           },
@@ -258,7 +290,6 @@ export class SubscriptionsService {
     };
   }
 
-  // Admin: Manually activate subscription
   async activateSubscription(userId: string, days: number) {
     const startDate = new Date();
     const endDate = new Date();
@@ -275,7 +306,6 @@ export class SubscriptionsService {
     });
   }
 
-  // Admin: Deactivate subscription
   async deactivateSubscription(userId: string) {
     return this.prisma.subscription.update({
       where: { userId },

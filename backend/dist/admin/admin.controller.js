@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminController = void 0;
 const common_1 = require("@nestjs/common");
@@ -135,7 +136,7 @@ __decorate([
     __param(1, (0, common_1.Query)('limit')),
     __param(2, (0, common_1.Query)('status')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, String]),
+    __metadata("design:paramtypes", [Object, Object, typeof (_a = typeof client_1.InterestStatus !== "undefined" && client_1.InterestStatus) === "function" ? _a : Object]),
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "getAllInterests", null);
 __decorate([
@@ -159,7 +160,7 @@ __decorate([
     __param(1, (0, common_1.Query)('limit')),
     __param(2, (0, common_1.Query)('status')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, String]),
+    __metadata("design:paramtypes", [Object, Object, typeof (_b = typeof client_1.SubscriptionStatus !== "undefined" && client_1.SubscriptionStatus) === "function" ? _b : Object]),
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "getAllSubscriptions", null);
 __decorate([

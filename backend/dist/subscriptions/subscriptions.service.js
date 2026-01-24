@@ -34,10 +34,19 @@ let SubscriptionsService = SubscriptionsService_1 = class SubscriptionsService {
         this.prisma = prisma;
         this.configService = configService;
         this.logger = new common_1.Logger(SubscriptionsService_1.name);
-        this.razorpay = new Razorpay({
-            key_id: this.configService.get('RAZORPAY_KEY_ID') || '',
-            key_secret: this.configService.get('RAZORPAY_KEY_SECRET') || '',
-        });
+        this.razorpay = null;
+        const keyId = this.configService.get('RAZORPAY_KEY_ID');
+        const keySecret = this.configService.get('RAZORPAY_KEY_SECRET');
+        if (keyId && keySecret) {
+            this.razorpay = new Razorpay({
+                key_id: keyId,
+                key_secret: keySecret,
+            });
+            this.logger.log('Razorpay initialized');
+        }
+        else {
+            this.logger.warn('Razorpay keys not found. Payments are disabled.');
+        }
     }
     async getSubscriptionStatus(userId) {
         const subscription = await this.prisma.subscription.findUnique({
@@ -90,6 +99,9 @@ let SubscriptionsService = SubscriptionsService_1 = class SubscriptionsService {
         }));
     }
     async createOrder(userId, dto) {
+        if (!this.razorpay) {
+            throw new common_1.BadRequestException('Payment service not configured');
+        }
         const plan = PLANS[dto.planType];
         if (!plan) {
             throw new common_1.BadRequestException('Invalid plan type');
@@ -132,27 +144,26 @@ let SubscriptionsService = SubscriptionsService_1 = class SubscriptionsService {
             };
         }
         catch (error) {
-            this.logger.error('Failed to create Razorpay order', error);
+            this.logger.error('Failed to create order', error);
             throw new common_1.BadRequestException('Failed to create order');
         }
     }
     async verifyPayment(userId, dto) {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = dto;
         const keySecret = this.configService.get('RAZORPAY_KEY_SECRET');
         if (!keySecret) {
             throw new common_1.BadRequestException('Payment secret not configured');
         }
         const expectedSignature = crypto
             .createHmac('sha256', keySecret)
-            .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+            .update(`${dto.razorpay_order_id}|${dto.razorpay_payment_id}`)
             .digest('hex');
-        if (expectedSignature !== razorpay_signature) {
+        if (expectedSignature !== dto.razorpay_signature) {
             throw new common_1.BadRequestException('Invalid payment signature');
         }
         const subscription = await this.prisma.subscription.findUnique({
             where: { userId },
         });
-        if (!subscription || subscription.orderId !== razorpay_order_id) {
+        if (!subscription || subscription.orderId !== dto.razorpay_order_id) {
             throw new common_1.BadRequestException('Order not found');
         }
         const duration = subscription.amount === PLANS.PREMIUM.amount
@@ -165,13 +176,12 @@ let SubscriptionsService = SubscriptionsService_1 = class SubscriptionsService {
             where: { userId },
             data: {
                 status: client_1.SubscriptionStatus.PAID,
-                paymentId: razorpay_payment_id,
+                paymentId: dto.razorpay_payment_id,
                 startDate,
                 endDate,
                 paymentMethod: 'razorpay',
             },
         });
-        this.logger.log(`Payment verified for user ${userId}`);
         return {
             message: 'Payment verified successfully',
             subscription: updatedSubscription,
@@ -192,7 +202,11 @@ let SubscriptionsService = SubscriptionsService_1 = class SubscriptionsService {
                             id: true,
                             email: true,
                             profile: {
-                                select: { firstName: true, lastName: true, phone: true },
+                                select: {
+                                    firstName: true,
+                                    lastName: true,
+                                    phone: true,
+                                },
                             },
                         },
                     },

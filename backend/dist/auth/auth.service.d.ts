@@ -25,32 +25,11 @@ export declare class AuthService {
         message: string;
     }>;
     validateUser(userId: string): Promise<{
-        profile: {
-            gender: import(".prisma/client").$Enums.Gender;
-            id: string;
-            firstName: string;
-            lastName: string;
-            profilePicture: string | null;
-        } | null;
-        subscription: {
-            id: string;
-            status: import(".prisma/client").$Enums.SubscriptionStatus;
-            planName: string;
-            endDate: Date | null;
-        } | null;
-    } & {
-        role: import(".prisma/client").$Enums.Role;
-        isActive: boolean;
-        id: string;
         email: string;
-        passwordHash: string;
-        isEmailVerified: boolean;
-        emailVerifyToken: string | null;
-        passwordResetToken: string | null;
-        passwordResetExpires: Date | null;
+        password: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
-        lastLoginAt: Date | null;
     }>;
     private generateToken;
 }

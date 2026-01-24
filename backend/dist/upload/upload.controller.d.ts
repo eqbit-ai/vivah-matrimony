@@ -7,13 +7,5 @@ export declare class UploadController {
     uploadProfilePicture(userId: string, file: Express.Multer.File): Promise<{
         imageUrl: string;
     }>;
-    uploadGalleryImage(userId: string, file: Express.Multer.File): Promise<{
-        id: string;
-        createdAt: Date;
-        profileId: string;
-        imageUrl: string;
-        isPrimary: boolean;
-        caption: string | null;
-        sortOrder: number;
-    }>;
+    uploadGalleryImage(userId: string, file: Express.Multer.File): Promise<any>;
 }
