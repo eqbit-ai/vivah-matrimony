@@ -14,14 +14,26 @@ export class UploadService {
   private readonly allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
   constructor(private readonly configService: ConfigService) {
-    const uploadDir = this.configService.get<string>('UPLOAD_DIR');
-    const baseUrl = this.configService.get<string>('BASE_URL');
+    const nodeEnv = this.configService.get<string>('NODE_ENV');
 
-    if (!uploadDir) throw new Error('❌ UPLOAD_DIR env is required');
-    if (!baseUrl) throw new Error('❌ BASE_URL env is required');
+    // ✅ Upload directory (local vs Railway)
+    this.uploadDir =
+      nodeEnv === 'production'
+        ? '/data/uploads' // Railway persistent disk
+        : path.join(process.cwd(), 'uploads'); // Local dev
 
-    this.uploadDir = uploadDir;
-    this.baseUrl = baseUrl.replace(/\/$/, ''); // remove trailing slash
+    // ✅ Base URL (must be set in production)
+    const baseUrl =
+      nodeEnv === 'production'
+        ? this.configService.get<string>('BASE_URL')
+        : 'http://localhost:4000';
+
+    if (nodeEnv === 'production' && !baseUrl) {
+      throw new Error('❌ BASE_URL env is required in production');
+    }
+
+    this.baseUrl = baseUrl!.replace(/\/$/, '');
+
     this.ensureUploadDir();
   }
 
@@ -30,13 +42,18 @@ export class UploadService {
   ============================ */
 
   private ensureUploadDir(): void {
-    if (!fs.existsSync(this.uploadDir)) {
-      fs.mkdirSync(this.uploadDir, { recursive: true });
-    }
+    try {
+      if (!fs.existsSync(this.uploadDir)) {
+        fs.mkdirSync(this.uploadDir, { recursive: true });
+      }
 
-    const profilesDir = path.join(this.uploadDir, 'profiles');
-    if (!fs.existsSync(profilesDir)) {
-      fs.mkdirSync(profilesDir, { recursive: true });
+      const profilesDir = path.join(this.uploadDir, 'profiles');
+      if (!fs.existsSync(profilesDir)) {
+        fs.mkdirSync(profilesDir, { recursive: true });
+      }
+    } catch (err) {
+      this.logger.error('Failed to initialize upload directories', err);
+      throw new Error('Upload directory initialization failed');
     }
   }
 
@@ -55,7 +72,10 @@ export class UploadService {
 
     try {
       await sharp(file.buffer)
-        .resize(800, 800, { fit: 'cover', position: 'center' })
+        .resize(800, 800, {
+          fit: 'cover',
+          position: 'center',
+        })
         .webp({ quality: 85 })
         .toFile(filepath);
 
@@ -81,7 +101,10 @@ export class UploadService {
 
     try {
       await sharp(file.buffer)
-        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+        .resize(1200, 1200, {
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
         .webp({ quality: 85 })
         .toFile(filepath);
 
