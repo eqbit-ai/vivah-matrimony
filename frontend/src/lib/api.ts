@@ -24,24 +24,29 @@ const API_URL = 'https://vivah-matrimony.onrender.com/api/v1';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
-  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true, // 🔑 REQUIRED for cookie auth
 });
 
 /* =====================================================
-   INTERCEPTOR
+   RESPONSE INTERCEPTOR
 ===================================================== */
 
 api.interceptors.response.use(
-  (res) => res,
+  (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
+    if (
+      error.response?.status === 401 &&
+      typeof window !== 'undefined'
+    ) {
       if (!window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }
     }
     return Promise.reject(error);
-  },
+  }
 );
 
 /* =====================================================
@@ -59,7 +64,12 @@ export const authApi = {
     (await api.get('/auth/me')).data,
 
   changePassword: async (currentPassword: string, newPassword: string) =>
-    (await api.post('/auth/change-password', { currentPassword, newPassword })).data,
+    (
+      await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword,
+      })
+    ).data,
 };
 
 /* =====================================================
@@ -91,11 +101,14 @@ export const profilesApi = {
 };
 
 /* =====================================================
-   INTERESTS  ✅ UI + BACKEND COMPAT
+   INTERESTS
 ===================================================== */
 
 export const interestsApi = {
-  sendInterest: async (receiverId: string, message?: string): Promise<Interest> =>
+  sendInterest: async (
+    receiverId: string,
+    message?: string,
+  ): Promise<Interest> =>
     (await api.post('/interests', { receiverId, message })).data,
 
   respondToInterest: async (
@@ -104,7 +117,6 @@ export const interestsApi = {
   ): Promise<Interest> =>
     (await api.put(`/interests/${interestId}/respond`, { status })).data,
 
-  // legacy-safe names
   getSent: async (page = 1, limit = 20) =>
     (await api.get('/interests/sent', { params: { page, limit } })).data,
 
@@ -114,7 +126,7 @@ export const interestsApi = {
   getMatches: async (page = 1, limit = 20) =>
     (await api.get('/interests/matches', { params: { page, limit } })).data,
 
-  // aliases for UI code
+  // Aliases used by UI
   getSentInterests: async (page = 1, limit = 20) =>
     interestsApi.getSent(page, limit),
 
@@ -126,7 +138,7 @@ export const interestsApi = {
 };
 
 /* =====================================================
-   NOTIFICATIONS ✅ FIXED
+   NOTIFICATIONS
 ===================================================== */
 
 export const notificationsApi = {
@@ -145,15 +157,15 @@ export const notificationsApi = {
   deleteNotification: async (id: string) =>
     (await api.delete(`/notifications/${id}`)).data,
 
-  // dashboard helper
+  // Dashboard helper
   getUnreadCount: async (): Promise<{ unreadCount: number }> => {
     const all = await notificationsApi.getAll();
-    return { unreadCount: all.filter(n => !n.isRead).length };
+    return { unreadCount: all.filter((n) => !n.isRead).length };
   },
 };
 
 /* =====================================================
-   SUBSCRIPTIONS ✅ FIXED
+   SUBSCRIPTIONS
 ===================================================== */
 
 export const subscriptionsApi = {
@@ -163,7 +175,7 @@ export const subscriptionsApi = {
   getPlans: async (): Promise<Subscription[]> =>
     (await api.get('/subscriptions/plans')).data,
 
-  // alias for dashboard
+  // Alias used by dashboard
   getStatus: async (): Promise<Subscription> =>
     subscriptionsApi.getMySubscription(),
 };
@@ -181,7 +193,7 @@ export const usersApi = {
 };
 
 /* =====================================================
-   ADMIN ✅ FIXED
+   ADMIN
 ===================================================== */
 
 export interface AdminDashboardResponse {
@@ -212,7 +224,9 @@ export const adminApi = {
 ===================================================== */
 
 export const uploadApi = {
-  uploadProfilePicture: async (file: File): Promise<{ imageUrl: string }> => {
+  uploadProfilePicture: async (
+    file: File,
+  ): Promise<{ imageUrl: string }> => {
     const formData = new FormData();
     formData.append('file', file);
 
