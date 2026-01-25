@@ -39,4 +39,5 @@ ENV UPLOAD_DIR=/data/uploads
 
 EXPOSE 4000
 
-CMD ["node", "dist/main.js"]
+# ✅ APPLY PRISMA MIGRATIONS BEFORE START
+CMD npx prisma migrate deploy && node dist/main.js
