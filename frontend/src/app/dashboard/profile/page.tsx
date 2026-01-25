@@ -60,6 +60,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function ProfilePage() {
   const { fetchUser } = useAuthStore();
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -70,7 +71,7 @@ export default function ProfilePage() {
     resolver: zodResolver(profileSchema),
   });
 
-  /* ===================== LOAD PROFILE (RUN ONCE) ===================== */
+  /* ===================== LOAD PROFILE ===================== */
 
   useEffect(() => {
     let mounted = true;
@@ -83,8 +84,8 @@ export default function ProfilePage() {
         setProfile(data);
 
         reset({
-          firstName: data.firstName,
-          lastName: data.lastName,
+          firstName: data.firstName ?? '',
+          lastName: data.lastName ?? '',
           gender: data.gender,
           dateOfBirth: data.dateOfBirth
             ? new Date(data.dateOfBirth).toISOString().split('T')[0]
@@ -96,16 +97,19 @@ export default function ProfilePage() {
           maritalStatus: data.maritalStatus,
           height: data.height ?? undefined,
           weight: data.weight ?? undefined,
-          education: data.education,
+          education: data.education ?? '',
           educationDetails: data.educationDetail ?? '',
-          profession: data.profession,
+          profession: data.profession ?? '',
           company: data.employer ?? '',
           annualIncome: data.annualIncome ?? '',
           workLocation: data.workingCity ?? '',
-          state: data.state,
-          city: data.city,
+          state: data.state ?? '',
+          city: data.city ?? '',
           aboutMe: data.bio ?? '',
-          hobbies: Array.isArray(data.hobbies) ? data.hobbies.join(', ') : '',
+          hobbies:
+            Array.isArray(data.hobbies) && data.hobbies.length > 0
+              ? data.hobbies.join(', ')
+              : '',
           fatherName: data.fatherName ?? '',
           fatherOccupation: data.fatherOccupation ?? '',
           motherName: data.motherName ?? '',
@@ -119,16 +123,16 @@ export default function ProfilePage() {
           nativePlace: data.pincode ?? '',
         });
       } catch (err) {
-        console.error(err);
+        console.error('Failed to load profile', err);
       } finally {
-        mounted && setLoading(false);
+        if (mounted) setLoading(false);
       }
     })();
 
     return () => {
       mounted = false;
     };
-  }, []); // ✅ IMPORTANT: EMPTY DEP ARRAY
+  }, [reset]);
 
   /* ===================== SUBMIT ===================== */
 
@@ -139,22 +143,25 @@ export default function ProfilePage() {
         ...data,
         dateOfBirth: new Date(data.dateOfBirth),
         hobbies: data.hobbies
-          ? data.hobbies.split(',').map((h) => h.trim())
+          ? data.hobbies
+            .split(',')
+            .map((h) => h.trim())
+            .filter(Boolean)
           : [],
       };
 
       const updated = await profilesApi.updateProfile(payload as any);
       setProfile(updated);
       await fetchUser();
-      toast.success('Profile updated successfully!');
+      toast.success('Profile updated successfully');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update profile');
+      toast.error(err?.response?.data?.message || 'Failed to update profile');
     } finally {
       setSaving(false);
     }
   };
 
-  /* ===================== PHOTO ===================== */
+  /* ===================== PHOTO UPLOAD ===================== */
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -163,27 +170,89 @@ export default function ProfilePage() {
     setUploading(true);
     try {
       const res = await uploadApi.uploadProfilePicture(file);
-      setProfile((p) => (p ? { ...p, profilePicture: res.imageUrl } : null));
+      setProfile((p) => (p ? { ...p, profilePicture: res.imageUrl } : p));
       await fetchUser();
-      toast.success('Profile picture updated!');
-    } catch (err: any) {
+      toast.success('Profile picture updated');
+    } catch {
       toast.error('Upload failed');
     } finally {
       setUploading(false);
     }
   };
 
+  /* ===================== RENDER GUARDS ===================== */
+
   if (loading) {
     return <div className="h-96 bg-gray-200 animate-pulse rounded-xl" />;
   }
 
-  const profileCompletion = profile
-    ? getProfileCompletionPercentage(profile)
-    : 0;
+  if (!profile) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        Unable to load profile. Please refresh.
+      </div>
+    );
+  }
+
+  const profileCompletion = getProfileCompletionPercentage(profile);
+
+  /* ===================== UI ===================== */
 
   return (
     <div className="space-y-8">
-      {/* UI stays exactly the same */}
+      <motion.div className="glass-card p-8">
+        <div className="flex gap-8 items-center">
+          <div className="relative">
+            <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+              {profile.profilePicture ? (
+                <img
+                  src={profile.profilePicture}
+                  alt="profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-4xl font-bold">
+                  {profile.firstName?.[0]}
+                </span>
+              )}
+            </div>
+
+            <label className="absolute bottom-0 right-0 cursor-pointer">
+              {uploading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Camera />
+              )}
+              <input type="file" hidden onChange={handlePhotoUpload} />
+            </label>
+          </div>
+
+          <div>
+            <h1 className="text-3xl font-bold">
+              {profile.firstName} {profile.lastName}
+            </h1>
+            <p>{profile.profession}</p>
+            <p>{profileCompletion}% complete</p>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div className="glass-card p-8">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* keep your tabs + inputs exactly as before */}
+
+          <div className="flex justify-end mt-8">
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn-primary flex gap-2"
+            >
+              {saving ? <Loader2 className="animate-spin" /> : <Save />}
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </motion.div>
     </div>
   );
 }
