@@ -1,49 +1,59 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import * as compression from 'compression';
 import * as cookieParser from 'cookie-parser';
+import * as express from 'express';
+import * as path from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+
+  // 👇 IMPORTANT: NestExpressApplication for static files
+  const app =
+    await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.use(helmet());
   app.use(compression());
   app.use(cookieParser());
 
   /**
+   * ✅ SERVE UPLOADED FILES
+   * Makes URLs like:
+   * https://vivah-matrimony.onrender.com/uploads/profiles/xxx.jpg
+   * work correctly
+   */
+  app.use(
+    '/uploads',
+    express.static(
+      path.join(process.env.UPLOAD_DIR || '/data/uploads'),
+    ),
+  );
+
+  /**
    * ✅ PRODUCTION-SAFE CORS (Vercel + Render)
-   * - Allows cookies
-   * - Handles OPTIONS preflight
-   * - Explicit allowed origins (NO wildcard)
    */
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        // ✅ CURRENT VERCEL DOMAIN
         'https://vivah-matrimony-ffy7.vercel.app',
-
-        // (optional) old vercel domain if reused later
         'https://vivah-matrimony.vercel.app',
-
-        // local dev
         'http://localhost:3000',
         'http://127.0.0.1:3000',
       ];
 
-      // allow server-to-server or curl requests
-      if (!origin) {
-        return callback(null, true);
-      }
-
+      if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+      return callback(
+        new Error(`CORS blocked for origin: ${origin}`),
+        false,
+      );
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -70,7 +80,8 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  const document =
+    SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
   const port = Number(process.env.PORT) || 4000;
