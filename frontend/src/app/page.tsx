@@ -35,9 +35,8 @@ function Navbar() {
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled ? 'bg-white/90 backdrop-blur-xl shadow-lg' : 'bg-transparent'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'bg-white/90 backdrop-blur-xl shadow-lg' : 'bg-transparent'
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
@@ -45,7 +44,7 @@ function Navbar() {
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
               <Heart className="w-6 h-6 text-white" fill="white" />
             </div>
-            <span className="font-display text-2xl font-bold text-gradient">Vivah</span>
+            <span className="font-display text-2xl font-bold text-gradient">JMD Shaadi</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -101,7 +100,7 @@ function HeroSection() {
             <span className="text-gradient">Perfect Life Partner</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            Begin your journey to eternal love. Join thousands of families who found their perfect match through Vivah Matrimony.
+            Begin your journey to eternal love. Join thousands of families who found their perfect match through JMD Shaadi Matrimony.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -184,7 +183,7 @@ function HowItWorksSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
           <span className="text-secondary-400 font-semibold uppercase tracking-wider">Simple Process</span>
-          <h2 className="font-display text-4xl md:text-5xl font-bold mt-2 mb-4">How <span className="text-gradient-gold">Vivah</span> Works</h2>
+          <h2 className="font-display text-4xl md:text-5xl font-bold mt-2 mb-4">How <span className="text-gradient-gold">JMD Shaadi</span> Works</h2>
           <p className="text-xl text-primary-200 max-w-2xl mx-auto">Your journey to finding the perfect partner is just four simple steps away.</p>
         </motion.div>
 
@@ -208,9 +207,9 @@ function HowItWorksSection() {
 // Testimonials Section
 function TestimonialsSection() {
   const testimonials = [
-    { name: 'Priya & Rahul Sharma', location: 'Mumbai, Maharashtra', quote: 'We found each other on Vivah and knew instantly that we were meant to be. The platform made it so easy for our families to connect.', married: 'Married in January 2024' },
+    { name: 'Priya & Rahul Sharma', location: 'Mumbai, Maharashtra', quote: 'We found each other on JMD Shaadi and knew instantly that we were meant to be. The platform made it so easy for our families to connect.', married: 'Married in January 2024' },
     { name: 'Sneha & Amit Patel', location: 'Ahmedabad, Gujarat', quote: 'The verification process gave us confidence. Within 3 months, we found our perfect match. Thank you, Vivah!', married: 'Married in March 2024' },
-    { name: 'Ananya & Vikram Singh', location: 'Delhi, NCR', quote: "Vivah's smart matching algorithm understood exactly what we were looking for. Our hearts matched perfectly!", married: 'Married in December 2023' },
+    { name: 'Ananya & Vikram Singh', location: 'Delhi, NCR', quote: "JMD Shaadi's smart matching algorithm understood exactly what we were looking for. Our hearts matched perfectly!", married: 'Married in December 2023' },
   ];
 
   return (
@@ -255,13 +254,13 @@ function MarriageMessageSection() {
     <section className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-800" />
       <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23DAA520' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
-      
+
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
         <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}>
           <Heart className="w-16 h-16 mx-auto mb-6 text-secondary-400" fill="currentColor" />
           <h2 className="font-display text-4xl md:text-5xl font-bold mb-6">Marriage is a Sacred Bond</h2>
           <p className="text-xl text-primary-100 mb-8 leading-relaxed">
-            In Indian culture, marriage is not just a union of two individuals but a coming together of two families, 
+            In Indian culture, marriage is not just a union of two individuals but a coming together of two families,
             two souls, and two destinies. It's a celebration of love, commitment, and the promise of a lifetime together.
           </p>
           <p className="font-hindi text-2xl text-secondary-300 mb-8">"विवाह एक पवित्र बंधन है जो दो आत्माओं को जोड़ता है"</p>
@@ -288,7 +287,7 @@ function CTASection() {
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500" />
           <Sparkles className="w-12 h-12 mx-auto mb-6 text-secondary-500" />
           <h2 className="font-display text-4xl md:text-5xl font-bold text-gray-900 mb-4">Ready to Find Your Soulmate?</h2>
-          <p className="text-xl text-gray-600 mb-8">Join millions of happy couples who found their perfect match on Vivah Matrimony.</p>
+          <p className="text-xl text-gray-600 mb-8">Join millions of happy couples who found their perfect match on JMD Shaadi Matrimony.</p>
           <Link href="/signup">
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="btn-primary text-lg px-10 py-4">
               Create Free Profile <ArrowRight className="inline w-5 h-5 ml-2" />
@@ -312,7 +311,7 @@ function Footer() {
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white" fill="white" />
               </div>
-              <span className="font-display text-2xl font-bold">Vivah</span>
+              <span className="font-display text-2xl font-bold">JMD Shaadi</span>
             </div>
             <p className="text-gray-400 mb-4">India's most trusted matrimonial platform for finding your perfect life partner.</p>
             <div className="flex gap-4">
@@ -345,15 +344,15 @@ function Footer() {
           <div>
             <h4 className="font-bold text-lg mb-4">Contact Info</h4>
             <ul className="space-y-4">
-              <li className="flex items-center gap-3"><Phone className="w-5 h-5 text-secondary-400" /><span className="text-gray-400">+91 1800-123-4567</span></li>
-              <li className="flex items-center gap-3"><Mail className="w-5 h-5 text-secondary-400" /><span className="text-gray-400">support@vivahmatrimony.com</span></li>
-              <li className="flex items-start gap-3"><MapPin className="w-5 h-5 text-secondary-400 mt-1" /><span className="text-gray-400">Mumbai, Maharashtra, India</span></li>
+              <li className="flex items-center gap-3"><Phone className="w-5 h-5 text-secondary-400" /><span className="text-gray-400">+91 77400 56098</span></li>
+              <li className="flex items-center gap-3"><Mail className="w-5 h-5 text-secondary-400" /><span className="text-gray-400">support@jmdshaadi.com</span></li>
+              <li className="flex items-start gap-3"><MapPin className="w-5 h-5 text-secondary-400 mt-1" /><span className="text-gray-400">Khanna,Punjab India</span></li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-          <p>&copy; {new Date().getFullYear()} Vivah Matrimony. All rights reserved. Made with ❤️ in India</p>
+          <p>&copy; {new Date().getFullYear()} JMD Shaadi Matrimony. All rights reserved. Made with ❤️ in India by Eqbit Ai</p>
         </div>
       </div>
     </footer>
