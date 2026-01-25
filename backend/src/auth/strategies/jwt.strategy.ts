@@ -13,11 +13,6 @@ export interface JwtPayload {
   exp?: number;
 }
 
-/**
- * ✅ JWT Strategy
- * - FIRST tries cookie-based auth (production)
- * - FALLBACK to Authorization header (Swagger / tools)
- */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -26,12 +21,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
+        // ✅ 1. Cookie-based auth (PRIMARY)
         (req: Request) => {
-          if (req?.cookies?.accessToken) {
-            return req.cookies.accessToken;
-          }
-          return null;
+          return req?.cookies?.accessToken || null;
         },
+
+        // ✅ 2. Authorization header (fallback, Swagger, admin tools)
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       ignoreExpiration: false,
@@ -57,7 +52,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             firstName: true,
             lastName: true,
             gender: true,
-            profilePicture: true,
           },
         },
         subscription: {
