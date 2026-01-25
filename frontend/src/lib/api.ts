@@ -27,7 +27,7 @@ const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // 🔑 REQUIRED for cookie auth
+  withCredentials: true, // ✅ required for cookie/JWT auth
 });
 
 /* =====================================================
@@ -46,7 +46,7 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 /* =====================================================
@@ -126,7 +126,7 @@ export const interestsApi = {
   getMatches: async (page = 1, limit = 20) =>
     (await api.get('/interests/matches', { params: { page, limit } })).data,
 
-  // Aliases used by UI
+  // UI aliases
   getSentInterests: async (page = 1, limit = 20) =>
     interestsApi.getSent(page, limit),
 
@@ -138,15 +138,16 @@ export const interestsApi = {
 };
 
 /* =====================================================
-   NOTIFICATIONS
+   NOTIFICATIONS  ✅ FIXED + TYPE SAFE
 ===================================================== */
 
 export const notificationsApi = {
-  getAll: async (): Promise<Notification[]> =>
-    (await api.get('/notifications')).data,
-
   getNotifications: async (page = 1, limit = 20) =>
     (await api.get('/notifications', { params: { page, limit } })).data,
+
+  // legacy alias (used in dashboard)
+  getAll: async () =>
+    (await api.get('/notifications')).data,
 
   markAsRead: async (id: string) =>
     (await api.patch(`/notifications/${id}/read`)).data,
@@ -157,10 +158,31 @@ export const notificationsApi = {
   deleteNotification: async (id: string) =>
     (await api.delete(`/notifications/${id}`)).data,
 
-  // Dashboard helper
+  /**
+   * ✅ DASHBOARD SAFE
+   * - array response
+   * - paginated response
+   */
   getUnreadCount: async (): Promise<{ unreadCount: number }> => {
-    const all = await notificationsApi.getAll();
-    return { unreadCount: all.filter((n) => !n.isRead).length };
+    const res = await notificationsApi.getAll();
+
+    if (Array.isArray(res)) {
+      return {
+        unreadCount: (res as Notification[]).filter(
+          (n: Notification) => !n.isRead,
+        ).length,
+      };
+    }
+
+    if (res?.data && Array.isArray(res.data)) {
+      return {
+        unreadCount: (res.data as Notification[]).filter(
+          (n: Notification) => !n.isRead,
+        ).length,
+      };
+    }
+
+    return { unreadCount: 0 };
   },
 };
 
@@ -170,12 +192,12 @@ export const notificationsApi = {
 
 export const subscriptionsApi = {
   getMySubscription: async (): Promise<Subscription> =>
-    (await api.get('/subscriptions/me')).data,
+    (await api.get('/subscriptions/status')).data, // ✅ correct endpoint
 
   getPlans: async (): Promise<Subscription[]> =>
     (await api.get('/subscriptions/plans')).data,
 
-  // Alias used by dashboard
+  // Dashboard alias
   getStatus: async (): Promise<Subscription> =>
     subscriptionsApi.getMySubscription(),
 };
