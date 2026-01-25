@@ -15,24 +15,35 @@ async function bootstrap() {
   app.use(cookieParser());
 
   /**
-   * ✅ PRODUCTION-SAFE CORS (Vercel + Railway)
-   * - Allows credentials (cookies)
-   * - Handles preflight correctly
-   * - Echoes allowed origins
+   * ✅ PRODUCTION-SAFE CORS (Vercel + Render)
+   * - Allows cookies
+   * - Handles OPTIONS preflight
+   * - Explicit allowed origins (NO wildcard)
    */
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [
+        // ✅ CURRENT VERCEL DOMAIN
+        'https://vivah-matrimony-ffy7.vercel.app',
+
+        // (optional) old vercel domain if reused later
         'https://vivah-matrimony.vercel.app',
+
+        // local dev
         'http://localhost:3000',
         'http://127.0.0.1:3000',
       ];
 
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
+      // allow server-to-server or curl requests
+      if (!origin) {
+        return callback(null, true);
       }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`), false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -41,7 +52,7 @@ async function bootstrap() {
       'Authorization',
       'X-Requested-With',
     ],
-    optionsSuccessStatus: 200,
+    optionsSuccessStatus: 204,
   });
 
   app.setGlobalPrefix('api/v1');
