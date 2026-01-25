@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Request } from 'express';
 
 export interface JwtPayload {
   sub: string;
@@ -12,6 +13,11 @@ export interface JwtPayload {
   exp?: number;
 }
 
+/**
+ * ✅ JWT Strategy
+ * - FIRST tries cookie-based auth (production)
+ * - FALLBACK to Authorization header (Swagger / tools)
+ */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -19,7 +25,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private prisma: PrismaService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => {
+          if (req?.cookies?.accessToken) {
+            return req.cookies.accessToken;
+          }
+          return null;
+        },
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET'),
     });
@@ -27,7 +41,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub, isActive: true },
+      where: {
+        id: payload.sub,
+        isActive: true,
+      },
       select: {
         id: true,
         email: true,
@@ -40,6 +57,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             firstName: true,
             lastName: true,
             gender: true,
+            profilePicture: true,
           },
         },
         subscription: {
