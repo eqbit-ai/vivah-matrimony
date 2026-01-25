@@ -36,11 +36,11 @@ export class AuthController {
   constructor(private authService: AuthService) { }
 
   private setAuthCookie(res: Response, token: string) {
-    res.cookie('access_token', token, {
+    res.cookie('accessToken', token, {
       httpOnly: true,
-      secure: true,         // REQUIRED for HTTPS (Vercel/Render)
-      sameSite: 'none',     // REQUIRED for cross-site cookies
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none', // REQUIRED for Vercel <-> Render
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
   }
 
@@ -67,18 +67,10 @@ export class AuthController {
     return result;
   }
 
-  @Post('forgot-password')
-  async forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(dto);
-  }
-
-  @Post('reset-password')
-  async resetPassword(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(dto);
-  }
-
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
   async changePassword(
     @CurrentUser('id') userId: string,
     @Body() dto: ChangePasswordDto,
@@ -93,6 +85,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   async getCurrentUser(@CurrentUser('id') userId: string) {
     return this.authService.validateUser(userId);
   }
