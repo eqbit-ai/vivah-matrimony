@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Users,
   Search,
@@ -10,6 +11,7 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  UserPlus,
 } from 'lucide-react';
 import { adminApi } from '@/lib/api';
 import { User, AdminSearchFilters } from '@/types';
@@ -79,12 +81,21 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="font-display text-3xl font-bold flex items-center gap-3">
-          <Users className="w-8 h-8 text-blue-400" />
-          Manage Users
-        </h1>
-        <p className="text-gray-400 mt-1">{total} total users</p>
+      <div className="flex justify-between items-start flex-wrap gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold flex items-center gap-3">
+            <Users className="w-8 h-8 text-blue-400" />
+            Manage Users
+          </h1>
+          <p className="text-gray-400 mt-1">{total} total users</p>
+        </div>
+        <Link
+          href="/admin/users/new"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 rounded-lg text-white"
+        >
+          <UserPlus className="w-4 h-4" />
+          New user
+        </Link>
       </div>
 
       {/* Search */}

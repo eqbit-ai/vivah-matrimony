@@ -71,6 +71,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  // Print routes render bare — no sidebar/chrome so window.print() produces a clean PDF.
+  if (pathname?.endsWith('/print')) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Mobile Overlay */}

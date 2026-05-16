@@ -17,6 +17,7 @@ import {
   Heart,
   Calendar,
   Users as UsersIcon,
+  Download,
 } from 'lucide-react';
 import { adminApi } from '@/lib/api';
 import { User } from '@/types';
@@ -146,6 +147,13 @@ export default function AdminUserDetailPage() {
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                onClick={() => window.open(`/admin/users/${user.id}/print`, '_blank')}
+                className="flex items-center gap-1 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm"
+              >
+                <Download className="w-4 h-4" />
+                Download PDF
+              </button>
               {!p?.isVerified && (
                 <button
                   onClick={() => doAction('verify')}
