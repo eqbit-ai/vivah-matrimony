@@ -176,10 +176,10 @@ export const notificationsApi = {
     (await api.get('/notifications')).data,
 
   markAsRead: async (id: string) =>
-    (await api.patch(`/notifications/${id}/read`)).data,
+    (await api.put(`/notifications/${id}/read`)).data,
 
   markAllAsRead: async () =>
-    (await api.patch('/notifications/read-all')).data,
+    (await api.put('/notifications/read-all')).data,
 
   deleteNotification: async (id: string) =>
     (await api.delete(`/notifications/${id}`)).data,
@@ -233,11 +233,11 @@ export const subscriptionsApi = {
 ===================================================== */
 
 export const usersApi = {
-  updateSettings: async (data: Partial<User>): Promise<User> =>
-    (await api.put('/users/me', data)).data,
+  getProfileViews: async () =>
+    (await api.get('/users/profile-views')).data,
 
   deleteAccount: async () =>
-    (await api.delete('/users/me')).data,
+    (await api.delete('/users/account')).data,
 };
 
 /* =====================================================
@@ -260,11 +260,48 @@ export const adminApi = {
   searchUsers: async (filters: AdminSearchFilters) =>
     adminApi.getUsers(filters),
 
+  getUser: async (id: string) =>
+    (await api.get(`/admin/users/${id}`)).data,
+
+  verifyUser: async (userId: string) =>
+    (await api.put(`/admin/users/${userId}/verify`)).data,
+
+  deactivateUser: async (userId: string) =>
+    (await api.put(`/admin/users/${userId}/deactivate`)).data,
+
+  reactivateUser: async (userId: string) =>
+    (await api.put(`/admin/users/${userId}/reactivate`)).data,
+
   updateUserStatus: async (
     userId: string,
     status: 'ACTIVE' | 'SUSPENDED',
   ) =>
-    (await api.patch(`/admin/users/${userId}/status`, { status })).data,
+    status === 'ACTIVE'
+      ? adminApi.reactivateUser(userId)
+      : adminApi.deactivateUser(userId),
+
+  getInterests: async (params?: { page?: number; limit?: number }) =>
+    (await api.get('/admin/interests', { params })).data,
+
+  scheduleInterestMeeting: async (data: {
+    interestId: string;
+    scheduledAt: string;
+    location?: string;
+    notes?: string;
+  }) =>
+    (await api.post('/admin/interests/schedule-meeting', data)).data,
+
+  getSubscriptions: async (params?: { page?: number; limit?: number }) =>
+    (await api.get('/admin/subscriptions', { params })).data,
+
+  activateSubscription: async (userId: string, planId?: string) =>
+    (await api.put(`/admin/subscriptions/${userId}/activate`, { planId })).data,
+
+  deactivateSubscription: async (userId: string) =>
+    (await api.put(`/admin/subscriptions/${userId}/deactivate`)).data,
+
+  getLogs: async (params?: { page?: number; limit?: number }) =>
+    (await api.get('/admin/logs', { params })).data,
 };
 
 /* =====================================================
