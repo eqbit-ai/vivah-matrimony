@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '@/lib/store';
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  identifier: z.string().min(1, 'Please enter your email or mobile number'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -59,19 +59,19 @@ export default function LoginPage() {
           <p className="text-gray-600 mb-8">Sign in to continue your journey to find your perfect match.</p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Email Field */}
+            {/* Identifier Field (email or mobile) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email or Mobile Number</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  type="email"
-                  {...register('email')}
+                  type="text"
+                  {...register('identifier')}
                   className="input-premium pl-12"
-                  placeholder="Enter your email"
+                  placeholder="Enter your email or mobile"
                 />
               </div>
-              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
+              {errors.identifier && <p className="mt-1 text-sm text-red-500">{errors.identifier.message}</p>}
             </div>
 
             {/* Password Field */}
