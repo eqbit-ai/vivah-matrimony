@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import Cookies from 'js-cookie';
 import {
   AuthResponse,
   LoginCredentials,
@@ -30,6 +31,23 @@ const api: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // ✅ required for cookie/JWT auth
+});
+
+/* =====================================================
+   REQUEST INTERCEPTOR — attach Bearer token
+
+   The backend also sets an httpOnly cookie, but modern browsers block
+   it as a third-party cookie when the API origin differs from the app
+   origin. The token is mirrored into a JS cookie at login so we can
+   send it via the Authorization header here.
+===================================================== */
+
+api.interceptors.request.use((config) => {
+  const token = Cookies.get('accessToken');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 /* =====================================================
