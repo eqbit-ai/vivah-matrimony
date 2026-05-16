@@ -6,14 +6,16 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'vivah-backend-production.up.railway.app',
+        hostname: 'jmd-shaadi-production.up.railway.app',
         pathname: '/uploads/**',
       },
     ],
   },
 
   env: {
-    NEXT_PUBLIC_API_URL: 'https://vivah-backend-production.up.railway.app/api/v1',
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL ||
+      'https://jmd-shaadi-production.up.railway.app/api/v1',
     NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
   },
 };

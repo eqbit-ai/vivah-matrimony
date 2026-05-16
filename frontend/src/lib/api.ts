@@ -20,7 +20,9 @@ import {
    CONFIG
 ===================================================== */
 
-const API_URL = 'https://vivah-matrimony.onrender.com/api/v1';
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  'https://jmd-shaadi-production.up.railway.app/api/v1';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
