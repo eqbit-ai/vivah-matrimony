@@ -315,14 +315,15 @@ function DemographicsCard({
               const malePct = row.total ? (row.male / row.total) * 100 : 0;
               return (
                 <li key={row.label} className="px-2 py-2">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-white truncate pr-2">{row.label}</span>
-                    <span className="text-gray-400 flex-shrink-0">
+                  <div className="flex justify-between items-baseline text-sm mb-1 gap-3">
+                    <span className="font-medium text-white truncate pr-2 flex-1 min-w-0">{row.label}</span>
+                    <span className="text-white font-semibold tabular-nums flex-shrink-0 w-12 text-right">{row.total}</span>
+                    <span className="text-gray-400 flex-shrink-0 tabular-nums">
                       <span className="text-blue-400">{row.male}M</span>
                       {' / '}
                       <span className="text-pink-400">{row.female}F</span>
-                      <span className="ml-2 text-gray-500">({pct}%)</span>
                     </span>
+                    <span className="text-gray-500 flex-shrink-0 tabular-nums w-10 text-right">{pct}%</span>
                   </div>
                   <div className="h-2 rounded-full overflow-hidden bg-gray-700 flex" style={{ width: `${(row.total / max) * 100}%` }}>
                     <div className="bg-blue-500" style={{ width: `${malePct}%` }} />
