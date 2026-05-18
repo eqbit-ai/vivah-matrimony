@@ -61,7 +61,7 @@ export default function SignupPage() {
   const onSubmit = async (data: SignupFormData) => {
     try {
       const { confirmPassword, ...signupData } = data;
-      await signUp(signupData as any);
+      await signUp({ ...signupData, dataConsent: true } as any);
       toast.success('Account created successfully!');
       router.push('/dashboard');
     } catch (error: any) {
